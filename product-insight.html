@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scimly Insight — Upload a spreadsheet, get a dashboard</title>
+<meta name="description" content="Scimly Insight turns a raw spreadsheet into an automatic, recommended dashboard — in development from the team behind Scimly Guard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="light">
+<style>
+/* ---- shared shell (was css/style.css) ---- */
+/* ============================================================
+   Scimly — shared shell (reset, nav, footer, layout primitives)
+   Per-page <style> blocks own the theme tokens + hero/section design.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a, a:link, a:visited { color: inherit; text-decoration: none; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+/* Skip link */
+.skip-link {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--accent); color: #111; padding: 10px 16px; z-index: 100;
+}
+.skip-link:focus { left: 12px; top: 12px; }
+
+/* Focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------------- Nav ---------------- */
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hairline);
+}
+.site-nav .wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 68px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.brand .mark {
+  width: 22px; height: 22px; border-radius: 5px;
+  background: var(--accent);
+  display: inline-block;
+}
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a { font-size: 0.94rem; color: var(--muted); transition: color .15s ease; white-space: nowrap; }
+.nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--text); }
+.nav-cta {
+  padding: 9px 18px; border-radius: 8px;
+  background: var(--accent); color: var(--on-accent);
+  font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+}
+.nav-cta:hover { filter: brightness(1.08); }
+.nav-toggle { display: none; }
+
+@media (max-width: 860px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 4px;
+    padding: 18px 0 22px;
+    margin-top: 12px;
+    border-top: 1px solid var(--hairline);
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a, .nav-links .nav-cta { width: 100%; padding: 10px 2px; }
+  .nav-toggle {
+    display: inline-flex; background: none; border: 1px solid var(--hairline);
+    color: var(--text); border-radius: 7px; width: 38px; height: 38px;
+    align-items: center; justify-content: center; cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+/* ---------------- Footer ---------------- */
+.site-footer {
+  border-top: 1px solid var(--hairline);
+  margin-top: 120px;
+  padding: 48px 0 36px;
+}
+.site-footer .wrap {
+  display: flex; flex-wrap: wrap; gap: 24px;
+  justify-content: space-between; align-items: flex-start;
+}
+.footer-cols { display: flex; gap: 64px; flex-wrap: wrap; }
+.footer-col h4 {
+  font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 12px;
+}
+.footer-col a, .footer-col p { display: block; margin: 0 0 8px; font-size: 0.92rem; color: var(--text); }
+.footer-col a { color: var(--muted); }
+.footer-col a:hover { color: var(--text); }
+.footer-bottom {
+  margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--hairline);
+  font-size: 0.82rem; color: var(--muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+}
+
+/* ---------------- Generic helpers ---------------- */
+.eyebrow {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent);
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 9px; font-weight: 600; font-size: 0.95rem;
+  border: 1px solid transparent; cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { filter: brightness(1.08); }
+a.btn-primary, a.btn-primary:link, a.btn-primary:visited, a.btn-primary:hover { color: var(--on-accent); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--hairline); }
+.btn-ghost:hover { border-color: var(--accent); }
+
+.section { padding: 96px 0; }
+.section-tight { padding: 56px 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ---- page-specific theme + layout ---- */
+  :root{
+    --bg:#F5F7F2; --surface:#FFFFFF; --surface-2:#EEF1E9; --hairline:#DCE3D8;
+    --text:#1C231F; --muted:#5B6660;
+    --accent:#5B5BD6; --on-accent:#FFFFFF;
+    --teal:#1E9E90; --coral:#E5586E; --amber:#D98F2B;
+    --font-display:'Manrope', system-ui, sans-serif;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+    color-scheme: light;
+  }
+  body { font-family: var(--font-body); }
+  .nav-links a { color: var(--muted); }
+
+  .status-banner {
+    background: var(--surface-2); border-bottom: 1px solid var(--hairline);
+    text-align: center; padding: 9px; font-size: 0.85rem; color: var(--text);
+  }
+  .status-banner strong { color: var(--accent); }
+
+  .hero { padding: 64px 0 30px; }
+  .hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.2rem,4.4vw,3.3rem); line-height: 1.08; margin: 16px 0 18px; letter-spacing: -0.01em; }
+  .hero p.lead { color: var(--muted); max-width: 54ch; font-size: 1.1rem; margin: 0 0 30px; }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+  /* signature: chart-mapping gallery */
+  .mapping-frame { border: 1px solid var(--hairline); border-radius: 16px; background: var(--surface); padding: 26px; margin-top: 56px; }
+  .mapping-frame .cap { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; }
+  .mapping-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .map-card { border: 1px solid var(--hairline); border-radius: 12px; padding: 18px; background: var(--surface-2); }
+  .map-card .col-name { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .map-card .arrow { color: var(--muted); font-size: 0.8rem; margin: 8px 0; }
+  .map-card .chart-name { font-weight: 700; font-family: var(--font-display); font-size: 1.02rem; margin-bottom: 12px; }
+  .mini-kpi { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600; color: var(--teal); }
+  .mini-pie { width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--coral) 0 35%, var(--amber) 35% 62%, var(--teal) 62% 100%); }
+  .mini-line svg { width: 100%; height: 46px; }
+
+  /* how it works */
+  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; }
+  .step { background: var(--surface); padding: 28px 22px; }
+  .step .n { font-family: var(--font-mono); color: var(--accent); font-size: 0.8rem; }
+  .step h3 { font-family: var(--font-display); font-size: 1.08rem; margin: 12px 0 8px; }
+  .step p { color: var(--muted); font-size: 0.9rem; margin: 0; }
+
+  /* coming next */
+  .roadmap-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .roadmap-item { border: 1px solid var(--hairline); border-radius: 12px; padding: 20px; background: var(--surface); }
+  .roadmap-item .eyebrow { font-size: 0.7rem; }
+  .roadmap-item h4 { font-family: var(--font-display); font-size: 1rem; margin: 10px 0 8px; }
+  .roadmap-item p { color: var(--muted); font-size: 0.88rem; margin: 0; }
+
+  .section-head { max-width: 60ch; margin-bottom: 36px; }
+  .section-head h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem,3vw,2rem); margin: 12px 0 8px; }
+  .section-head p { color: var(--muted); margin: 0; }
+
+  .waitlist-band { border: 1px solid var(--hairline); border-radius: 16px; padding: 46px; text-align: center; background: var(--surface); }
+  .waitlist-band h2 { font-family: var(--font-display); font-size: clamp(1.5rem,3vw,2rem); margin: 0 0 12px; }
+  .waitlist-band p { color: var(--muted); margin: 0 0 26px; }
+
+  @media (max-width: 900px) {
+    .mapping-row, .roadmap-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="status-banner">Scimly Insight is <strong>in active development</strong> — this page previews what's coming.</div>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="scimly.html" class="brand"><span class="mark"></span>Scimly</a>
+    <div class="nav-links" id="navLinks">
+      <a href="scimly.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="scimly.html#blog">Blog</a>
+      <a href="#waitlist" class="nav-cta">Get notified</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  </div>
+</nav>
+
+<main id="main">
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Scimly Insight · In development</span>
+      <h1>Upload a spreadsheet. Get a dashboard. No analyst required for the first pass.</h1>
+      <p class="lead">Insight cleans your data, works out what each column actually is, and recommends the chart that fits — a KPI card, a pie, a line — then lets you rearrange, filter, and ask it questions from there.</p>
+      <div class="hero-actions">
+        <a href="#waitlist" class="btn btn-primary">Get notified at launch</a>
+        <a href="#how" class="btn btn-ghost">How it will work</a>
+      </div>
+
+      <div class="mapping-frame">
+        <div class="cap">Auto-recommended · Insight looks at each column and picks a chart</div>
+        <div class="mapping-row">
+          <div class="map-card">
+            <div class="col-name">column: revenue</div>
+            <div class="arrow">↓ recommended</div>
+            <div class="chart-name">KPI Card</div>
+            <div class="mini-kpi">$482K</div>
+          </div>
+          <div class="map-card">
+            <div class="col-name">column: country</div>
+            <div class="arrow">↓ recommended</div>
+            <div class="chart-name">Pie Chart</div>
+            <div class="mini-pie" aria-hidden="true"></div>
+          </div>
+          <div class="map-card">
+            <div class="col-name">column: order date</div>
+            <div class="arrow">↓ recommended</div>
+            <div class="chart-name">Line Chart</div>
+            <div class="mini-line">
+              <svg viewBox="0 0 200 46" aria-hidden="true">
+                <polyline points="0,36 30,28 60,32 90,14 120,20 150,8 180,16 200,4" fill="none" stroke="#1E9E90" stroke-width="2.5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Four steps, one upload</h2>
+        <p>This is a real pipeline — each step depends on the one before it, so we're building and shipping it in this order.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><span class="n">01</span><h3>Upload</h3><p>Drag in a CSV or Excel file. Insight validates it and confirms it's readable before anything else happens.</p></div>
+        <div class="step"><span class="n">02</span><h3>Clean &amp; understand</h3><p>Duplicates removed, gaps filled, and every column's real type worked out automatically.</p></div>
+        <div class="step"><span class="n">03</span><h3>Recommend</h3><p>Each column gets matched to the chart that actually fits it — not a generic template.</p></div>
+        <div class="step"><span class="n">04</span><h3>Dashboard</h3><p>Everything renders automatically. From there you can rename, resize, recolor, and rearrange.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Coming after launch</span>
+        <h2>What we're building next</h2>
+        <p>In the order we're building it — each one only starts once the step before it is solid.</p>
+      </div>
+      <div class="roadmap-grid">
+        <div class="roadmap-item"><span class="eyebrow">Editing</span><h4>Make the dashboard yours</h4><p>Rename, delete, resize, or swap the chart type on any widget — right on the canvas.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Layout</span><h4>Drag, resize, save</h4><p>Arrange widgets exactly how your team reads them, and it stays that way next time.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Filters</span><h4>One filter, every chart</h4><p>Change the date range or the country once — every widget on the dashboard updates together.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Saving</span><h4>Save, duplicate, share</h4><p>Keep dashboards for each dataset, duplicate one as a starting point, or hand it to a teammate.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Exporting</span><h4>Take it with you</h4><p>Export as PDF, PNG, CSV, Excel, or JSON — whatever the next meeting needs.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Ask Insight</span><h4>Ask your data a question</h4><p>Type "show monthly revenue" and get the chart back, no formula required.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="waitlist">
+    <div class="wrap">
+      <div class="waitlist-band">
+        <h2>Be the first to try Scimly Insight</h2>
+        <p>We'll email you the day the first version is ready to run.</p>
+        <a href="mailto:hello@scimly.io?subject=Notify%20me%20about%20Scimly%20Insight" class="btn btn-primary">Get notified</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="product-guard.html">Scimly Guard</a>
+        <a href="product-insight.html">Scimly Insight</a>
+        <a href="products.html">All products</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="scimly.html">Home</a>
+        <a href="scimly.html#blog">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>hello@scimly.io</p>
+      </div>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>© 2026 Scimly. All rights reserved.</span>
+    <span>Scimly Insight — a Scimly product, in development.</span>
+  </div>
+</footer>
+
+<script>
+  const t = document.getElementById('navToggle'), l = document.getElementById('navLinks');
+  function setMenu(open) {
+    l.classList.toggle('open', open);
+    t.setAttribute('aria-expanded', open);
+    t.textContent = open ? '\u2715' : '\u2630';
+  }
+  if (t) t.addEventListener('click', () => setMenu(!l.classList.contains('open')));
+  l.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+</script>
+</body>
+</html>

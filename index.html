@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scimly — Software that audits itself into trust</title>
+<link rel="icon" type="image/svg+xml" href="asset/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="asset/favicon-32.png">
+<meta name="description" content="Scimly builds local-first desktop software for enterprise IT and data teams: Scimly Guard for access review and SCIM readiness, and Scimly Insight for instant dashboards.">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F8F3;
+  --surface: #FFFFFF;
+  --surface-2: #F3F4EC;
+  --hairline: #E5E8DE;
+  --text: #18211D;
+  --muted: #5D685F;
+  --accent: #5B5BD6;
+  --on-accent: #FFFFFF;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+/* ============================================================
+   Scimly — shared shell (reset, nav, footer, layout primitives)
+   Per-page <style> blocks own the theme tokens + hero/section design.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a, a:link, a:visited { color: inherit; text-decoration: none; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+/* Skip link */
+.skip-link {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--accent); color: #111; padding: 10px 16px; z-index: 100;
+}
+.skip-link:focus { left: 12px; top: 12px; }
+
+/* Focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------------- Nav ---------------- */
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hairline);
+}
+.site-nav .wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 68px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.brand .mark {
+  width: auto; height: 24px;
+  display: inline-block;
+}
+.brand .mark img { height: 100%; width: auto; display: block; }
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a { font-size: 0.94rem; color: var(--muted); transition: color .15s ease; white-space: nowrap; }
+.nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--text); }
+.nav-cta {
+  padding: 9px 18px; border-radius: 8px;
+  background: var(--accent); color: var(--on-accent);
+  font-size: 0.9rem; font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+}
+.nav-cta:hover { filter: brightness(1.08); }
+/* Specificity fix: ".nav-links a" was overriding the CTA's own text color,
+   which made "View Scimly Guard" render in muted gray on its green background. */
+.nav-links a.nav-cta,
+.nav-links a.nav-cta:hover,
+.nav-links a.nav-cta[aria-current="page"] {
+  color: var(--on-accent);
+}
+.nav-toggle { display: none; }
+
+@media (max-width: 860px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 4px;
+    padding: 18px 0 22px;
+    margin-top: 12px;
+    border-top: 1px solid var(--hairline);
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a, .nav-links .nav-cta { width: 100%; padding: 10px 2px; }
+  .nav-toggle {
+    display: inline-flex; background: none; border: 1px solid var(--hairline);
+    color: var(--text); border-radius: 7px; width: 38px; height: 38px;
+    align-items: center; justify-content: center; cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+/* ---------------- Footer ---------------- */
+.site-footer {
+  border-top: 1px solid var(--hairline);
+  margin-top: 120px;
+  padding: 48px 0 36px;
+}
+.site-footer .wrap {
+  display: flex; flex-wrap: wrap; gap: 24px;
+  justify-content: space-between; align-items: flex-start;
+}
+.footer-cols { display: flex; gap: 64px; flex-wrap: wrap; }
+.footer-col h4 {
+  font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 12px;
+}
+.footer-col a, .footer-col p { display: block; margin: 0 0 8px; font-size: 0.92rem; color: var(--text); }
+.footer-col a { color: var(--muted); }
+.footer-col a:hover { color: var(--text); }
+.footer-bottom {
+  margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--hairline);
+  font-size: 0.82rem; color: var(--muted);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+}
+
+/* ---------------- Generic helpers ---------------- */
+.eyebrow {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent);
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 9px; font-weight: 600; font-size: 0.95rem;
+  border: 1px solid transparent; cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--hairline); }
+.btn-ghost:hover { border-color: var(--accent); }
+/* Specificity fix: "a:link, a:visited { color: inherit }" above was beating
+   .btn-primary's own color, making every blue/accent button render with
+   dark (near-black) text instead of white. */
+a.btn-primary, a.btn-primary:link, a.btn-primary:visited, a.btn-primary:hover {
+  color: var(--on-accent);
+}
+
+.section { padding: 96px 0; }
+.section-tight { padding: 56px 0; }
+
+.product-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.product-option:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.product-option.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+  background: var(--surface-2);
+}
+.product-option img {
+  width: 62px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+.product-option strong {
+  display: block;
+  font-size: 0.96rem;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.product-option small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.product-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.product-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  padding: 22px;
+  background: var(--surface);
+}
+.product-detail-copy {
+  display: flex;
+  flex-direction: column;
+}
+.product-detail-visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--hairline);
+}
+.product-detail-copy h3 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  margin: 8px 0 10px;
+  line-height: 1.2;
+}
+.product-detail-copy p {
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.product-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 20px;
+}
+.product-features span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.product-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 920px) {
+  .product-list {
+    grid-template-columns: 1fr 1fr;
+  }
+  .product-detail-visual img {
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-anchor { scroll-margin-top: 96px; }
+
+.demo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 19, 0.68);
+  backdrop-filter: blur(6px);
+}
+.demo-modal.open {
+  display: flex;
+}
+.demo-modal-panel {
+  width: min(1100px, 100%);
+  height: min(780px, 90vh);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.2);
+}
+.demo-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+.demo-modal-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+.demo-modal-close {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.demo-modal iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== home ===== */
+#page-home /* ---- shared shell (was css/style.css) ---- */
+
+
+/* ---- page-specific theme + layout ---- */
+  
+
+  /* ---- Hero ---- */
+  .hero { padding: 88px 0 60px; }#page-home .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 56px; align-items: center; }#page-home .hero h1 {
+    font-family: var(--font-display); font-weight: 500; font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+    line-height: 1.06; margin: 18px 0 20px; letter-spacing: -0.01em;
+  }#page-home .hero h1 em { font-style: italic; color: var(--accent); }#page-home .hero p.lead { font-size: 1.14rem; color: var(--muted); max-width: 46ch; margin: 0 0 32px; }#page-home .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }#page-home /* ---- Seal signature element ---- */
+  .seal-wrap { display: flex; justify-content: center; align-items: center; }#page-home .seal { width: min(320px, 90%); aspect-ratio: 1; position: relative; }#page-home .seal svg { width: 100%; height: 100%; }#page-home .seal .ring-text { animation: spin 34s linear infinite; transform-origin: 50% 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }#page-home /* ---- Pillars ---- */
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; }#page-home .pillar { background: var(--surface); padding: 32px 28px; }#page-home .pillar .num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }#page-home .pillar h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.2rem; margin: 14px 0 10px; }#page-home .pillar p { color: var(--muted); margin: 0; font-size: 0.95rem; }#page-home /* ---- Products preview ---- */
+  .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }#page-home .product-card {
+    border: 1px solid var(--hairline); border-radius: 16px; padding: 30px;
+    background: var(--surface); position: relative; transition: transform .18s ease, border-color .18s ease;
+  }#page-home .product-card:hover { transform: translateY(-3px); border-color: var(--accent); }#page-home .product-card .tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em;
+    padding: 4px 9px; border-radius: 100px; margin-bottom: 16px;
+  }#page-home .tag-live { background: rgba(63,185,80,0.14); color: #4fd869; }#page-home .tag-dev { background: rgba(212,169,74,0.14); color: var(--accent); }#page-home .product-card h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; margin: 0 0 10px; }#page-home .product-card p { color: var(--muted); margin: 0 0 22px; font-size: 0.96rem; }#page-home .product-card .go { font-size: 0.92rem; font-weight: 600; color: var(--text); }#page-home .product-card .go::after { content: " →"; color: var(--accent); }#page-home /* ---- Trust strip ---- */
+  .trust-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 40px; }#page-home .trust-item { display: flex; gap: 14px; }#page-home .trust-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 8px; flex-shrink: 0; }#page-home .trust-item p { margin: 0; color: var(--muted); font-size: 0.94rem; }#page-home .trust-item strong { color: var(--text); display: block; margin-bottom: 3px; font-weight: 600; }#page-home /* ---- Blog teaser ---- */
+  .blog-teaser-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }#page-home .teaser-card { border: 1px solid var(--hairline); border-radius: 14px; padding: 26px; background: var(--surface-2); }#page-home .teaser-card .eyebrow { font-size: 0.7rem; }#page-home .teaser-card h4 { font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; margin: 10px 0 8px; }#page-home .teaser-card p { color: var(--muted); font-size: 0.92rem; margin: 0; }#page-home .section-head { max-width: 60ch; margin-bottom: 40px; }#page-home .section-head h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.6rem,3vw,2.1rem); margin: 12px 0 8px; }#page-home .section-head p { color: var(--muted); margin: 0; }
+
+  @media (max-width: 860px) {#page-home .hero-grid, #page-home .products-grid, #page-home .pillars, #page-home .trust-list, #page-home .blog-teaser-grid { grid-template-columns: 1fr; }#page-home .pillars { border-radius: 12px; }
+  }
+
+/* ===== products ===== */
+#page-products /* ---- shared shell (was css/style.css) ---- */
+
+
+/* ---- page-specific theme + layout ---- */
+  
+  .page-head { padding: 72px 0 24px; }
+  .page-head h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem,4vw,2.6rem); margin: 14px 0 10px; }
+  .page-head p { color: var(--muted); max-width: 60ch; margin: 0; }
+  .prose { max-width: 68ch; }
+  .prose .meta { display: block; font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); margin-bottom: 36px; }
+  .prose h2 { font-family: var(--font-display); font-weight: 500; font-size: 1.3rem; margin: 40px 0 12px; }
+  .prose h2:first-of-type { margin-top: 0; }
+  .prose p { color: var(--muted); line-height: 1.7; margin: 0 0 16px; }
+  .prose ul { color: var(--muted); line-height: 1.7; margin: 0 0 16px; padding-left: 20px; }
+  .prose li { margin-bottom: 6px; }
+  .prose strong { color: var(--text); }
+  .prose a { color: var(--accent); }
+  .value-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 8px; }
+  .value-item { display: flex; gap: 14px; }
+  .value-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 8px; flex-shrink: 0; }
+  .value-item p { margin: 0; color: var(--muted); font-size: 0.94rem; }
+  .value-item strong { color: var(--text); display: block; margin-bottom: 3px; font-weight: 600; }
+  @media (max-width: 860px) { .value-list { grid-template-columns: 1fr; } }#page-products .page-head p { color: var(--muted); max-width: 56ch; margin: 0; }#page-products .product-row {
+    display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 44px; align-items: center;
+    border: 1px solid var(--hairline); border-radius: 18px; padding: 40px; margin-bottom: 26px;
+    background: var(--surface);
+  }#page-products .product-row .visual {
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--hairline); aspect-ratio: 16/10;
+    display: flex; align-items: center; justify-content: center; background: var(--surface-2);
+  }#page-products .product-row.dev .visual { background: linear-gradient(135deg, var(--surface-2), var(--surface)); }#page-products .placeholder-chart { width: 78%; }#page-products .product-row .tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em;
+    padding: 4px 9px; border-radius: 100px; margin-bottom: 14px;
+  }#page-products .tag-live { background: rgba(63,185,80,0.14); color: #4fd869; }#page-products .tag-dev { background: rgba(212,169,74,0.14); color: var(--accent); }#page-products .product-row h2 { font-family: var(--font-display); font-weight: 500; font-size: 1.9rem; margin: 0 0 10px; }#page-products .product-row p.desc { color: var(--muted); margin: 0 0 22px; }#page-products .feature-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }#page-products .feature-pills span { font-size: 0.8rem; color: var(--muted); border: 1px solid var(--hairline); padding: 5px 11px; border-radius: 100px; }
+
+  @media (max-width: 820px) {#page-products .product-row { grid-template-columns: 1fr; }
+  }
+
+/* ===== blog ===== */
+#page-blog /* ---- shared shell (was css/style.css) ---- */
+
+
+/* ---- page-specific theme + layout ---- */
+  
+  .page-head { padding: 72px 0 24px; }#page-blog .page-head h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem,4vw,2.6rem); margin: 14px 0 10px; }#page-blog .page-head p { color: var(--muted); max-width: 56ch; margin: 0; }#page-blog .post-list { display: flex; flex-direction: column; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; }#page-blog .post-row { display: grid; grid-template-columns: 140px 1fr; gap: 24px; padding: 28px; background: var(--surface); }#page-blog .post-row .date { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); padding-top: 3px; }#page-blog .post-row h2 { font-family: var(--font-display); font-weight: 500; font-size: 1.3rem; margin: 0 0 8px; cursor: pointer; }#page-blog .post-row p { color: var(--muted); margin: 0; font-size: 0.94rem; max-width: 62ch; }#page-blog .post-row .tag { display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); margin-bottom: 8px; }#page-blog .post-row .byline { display: block; font-size: 0.8rem; color: var(--muted); margin: -4px 0 12px; }#page-blog .post-row .post-more { display: none; margin-top: 12px; }#page-blog .post-row .post-more p { margin: 0 0 12px; }#page-blog .post-row.open .post-more { display: block; }#page-blog .post-toggle { display: inline-flex; align-items: center; gap: 5px; margin-top: 12px; background: none; border: none; padding: 0; font: inherit; font-weight: 600; font-size: 0.88rem; color: var(--accent); cursor: pointer; }#page-blog .post-toggle:hover { text-decoration: underline; }#page-blog .post-toggle .chevron { transition: transform .15s ease; }#page-blog .post-row.open .post-toggle .chevron { transform: rotate(90deg); }#page-blog .note {
+    margin-top: 30px; padding: 16px 20px; border: 1px dashed var(--hairline); border-radius: 10px;
+    color: var(--muted); font-size: 0.86rem;
+  }
+
+  @media (max-width: 640px) {#page-blog .post-row { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+/* ===== guard ===== */
+#page-guard /* ---- shared shell (was css/style.css) ---- */
+
+
+/* ---- page-specific theme + layout ---- */
+  
+  body { font-family: var(--font-body); }#page-guard .hero { padding: 84px 0 30px; }#page-guard .hero h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(2.2rem,4.4vw,3.3rem); line-height: 1.08; margin: 16px 0 18px; }#page-guard .hero p.lead { color: var(--muted); max-width: 56ch; font-size: 1.08rem; margin: 0 0 30px; }#page-guard .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 52px; }#page-guard /* Findings ticker — signature element */
+  .ticker-frame {
+    border: 1px solid var(--hairline); border-radius: 12px; background: var(--surface);
+    overflow: hidden; padding: 0;
+  }#page-guard .ticker-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 18px; border-bottom: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: 0.76rem; color: var(--muted);
+  }#page-guard .ticker-head .live { color: var(--safe); }#page-guard .ticker-body { padding: 6px 0; }#page-guard .ticker-row {
+    display: flex; align-items: center; gap: 14px; padding: 10px 18px;
+    font-family: var(--font-mono); font-size: 0.83rem; border-bottom: 1px solid var(--hairline);
+  }#page-guard .ticker-row:last-child { border-bottom: none; }#page-guard .sev-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }#page-guard .sev-high { background: var(--accent); }#page-guard .sev-med { background: var(--warn); }#page-guard .sev-low { background: var(--safe); }#page-guard .ticker-row .msg { color: var(--text); }#page-guard .ticker-row .path { color: var(--muted); margin-left: auto; }#page-guard /* Capability cards */
+  .cap-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; }#page-guard .cap { background: var(--surface); padding: 30px 26px; }#page-guard .cap .eyebrow { font-size: 0.72rem; }#page-guard .cap h3 { font-family: var(--font-display); font-size: 1.15rem; margin: 12px 0 10px; }#page-guard .cap p { color: var(--muted); font-size: 0.93rem; margin: 0; }#page-guard .cap ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 0.9rem; }#page-guard .cap ul li { margin-bottom: 6px; }#page-guard .sample-panel { margin-top: 32px; border: 1px solid var(--hairline); border-radius: 14px; padding: 26px; background: var(--surface-2); }#page-guard .sample-panel-copy h3 { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 6px; }#page-guard .sample-panel-copy p { color: var(--muted); font-size: 0.93rem; margin: 0 0 20px; max-width: 62ch; }#page-guard .sample-files { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }#page-guard .sample-file { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--surface); transition: border-color .15s ease, transform .15s ease; }#page-guard .sample-file:hover { border-color: var(--accent); transform: translateY(-1px); }#page-guard .sample-file-info { min-width: 0; }#page-guard .sample-file-info strong { display: block; font-size: 0.94rem; color: var(--text); margin-bottom: 4px; }#page-guard .sample-file-info small { display: block; color: var(--muted); font-size: 0.82rem; line-height: 1.4; }#page-guard .sample-file-dl { flex-shrink: 0; margin-top: auto; display: flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 700; color: var(--accent); white-space: nowrap; padding: 5px 9px; border-radius: 999px; background: var(--surface-2); }#page-guard /* Risk flags */
+  .flags-list { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }#page-guard .flag-item {
+    display: flex; gap: 14px; padding: 18px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--surface-2);
+  }#page-guard .flag-item .sev-dot { margin-top: 6px; }#page-guard .flag-item strong { display: block; margin-bottom: 4px; font-size: 0.96rem; }#page-guard .flag-item p { margin: 0; color: var(--muted); font-size: 0.88rem; }#page-guard /* Pricing */
+  .editions-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }#page-guard .edition-card {
+    border: 1px solid var(--hairline); border-radius: 14px; padding: 22px 18px; background: var(--surface);
+    display: flex; flex-direction: column;
+  }#page-guard .edition-card.featured { border-color: var(--accent); background: linear-gradient(180deg, rgba(229,72,77,0.08), var(--surface) 40%); }#page-guard .edition-card .badge {
+    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.05em; color: var(--accent);
+    margin-bottom: 10px; text-transform: uppercase;
+  }#page-guard .edition-card h4 { font-family: var(--font-display); font-size: 1.05rem; margin: 0 0 6px; }#page-guard .edition-card .price { font-family: var(--font-mono); font-size: 1.4rem; margin: 6px 0 4px; }#page-guard .edition-card .price .was { font-size: 0.85rem; color: var(--muted); text-decoration: line-through; margin-right: 6px; }#page-guard .edition-card ul { list-style: none; margin: 14px 0 20px; padding: 0; flex-grow: 1; }#page-guard .edition-card ul li { font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; padding-left: 16px; position: relative; }#page-guard .edition-card ul li::before { content: "✓"; position: absolute; left: 0; color: var(--safe); }#page-guard .section-head { max-width: 62ch; margin-bottom: 36px; }#page-guard .section-head h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.5rem,3vw,2rem); margin: 12px 0 8px; }#page-guard .section-head p { color: var(--muted); margin: 0; }#page-guard .included-list { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }#page-guard .included-item { border: 1px solid var(--hairline); border-radius: 10px; padding: 16px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); background: var(--surface-2); }#page-guard .included-item strong { display: block; color: var(--text); margin-bottom: 4px; font-family: var(--font-body); }#page-guard .cta-band { border: 1px solid var(--hairline); border-radius: 16px; padding: 46px; text-align: center; background: var(--surface); }#page-guard .cta-band h2 { font-family: var(--font-display); font-size: clamp(1.5rem,3vw,2rem); margin: 0 0 12px; }#page-guard .cta-band p { color: var(--muted); margin: 0 0 26px; }
+
+  @media (max-width: 1180px) {#page-guard .editions-grid { grid-template-columns: repeat(3,1fr); }
+  }
+  @media (max-width: 980px) {#page-guard .editions-grid { grid-template-columns: repeat(2,1fr); }#page-guard .included-list { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 720px) {#page-guard .cap-grid, #page-guard .flags-list { grid-template-columns: 1fr; }#page-guard .editions-grid { grid-template-columns: 1fr; }#page-guard .sample-files { grid-template-columns: 1fr; }#page-guard .sample-file-info small { display: none; }#page-guard .sample-panel { padding: 20px; }
+  }
+
+/* ===== insight ===== */
+#page-insight /* ---- shared shell (was css/style.css) ---- */
+
+
+/* ---- page-specific theme + layout ---- */
+  
+  body { font-family: var(--font-body); }#page-insight .nav-links a { color: var(--muted); }#page-insight .status-banner {
+    background: var(--surface-2); border-bottom: 1px solid var(--hairline);
+    text-align: center; padding: 9px; font-size: 0.85rem; color: var(--text);
+  }#page-insight .status-banner strong { color: var(--accent); }#page-insight .hero { padding: 64px 0 30px; }#page-insight .hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.2rem,4.4vw,3.3rem); line-height: 1.08; margin: 16px 0 18px; letter-spacing: -0.01em; }#page-insight .hero p.lead { color: var(--muted); max-width: 54ch; font-size: 1.1rem; margin: 0 0 30px; }#page-insight .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }#page-insight /* signature: chart-mapping gallery */
+  .mapping-frame { border: 1px solid var(--hairline); border-radius: 16px; background: var(--surface); padding: 26px; margin-top: 56px; }#page-insight .mapping-frame .cap { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; }#page-insight .mapping-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }#page-insight .map-card { border: 1px solid var(--hairline); border-radius: 12px; padding: 18px; background: var(--surface-2); }#page-insight .map-card .col-name { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }#page-insight .map-card .arrow { color: var(--muted); font-size: 0.8rem; margin: 8px 0; }#page-insight .map-card .chart-name { font-weight: 700; font-family: var(--font-display); font-size: 1.02rem; margin-bottom: 12px; }#page-insight .mini-kpi { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600; color: var(--teal); }#page-insight .mini-pie { width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--coral) 0 35%, var(--amber) 35% 62%, var(--teal) 62% 100%); }#page-insight .mini-line svg { width: 100%; height: 46px; }#page-insight /* how it works */
+  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; }#page-insight .step { background: var(--surface); padding: 28px 22px; }#page-insight .step .n { font-family: var(--font-mono); color: var(--accent); font-size: 0.8rem; }#page-insight .step h3 { font-family: var(--font-display); font-size: 1.08rem; margin: 12px 0 8px; }#page-insight .step p { color: var(--muted); font-size: 0.9rem; margin: 0; }#page-insight /* coming next */
+  .roadmap-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }#page-insight .roadmap-item { border: 1px solid var(--hairline); border-radius: 12px; padding: 20px; background: var(--surface); }#page-insight .roadmap-item .eyebrow { font-size: 0.7rem; }#page-insight .roadmap-item h4 { font-family: var(--font-display); font-size: 1rem; margin: 10px 0 8px; }#page-insight .roadmap-item p { color: var(--muted); font-size: 0.88rem; margin: 0; }#page-insight .section-head { max-width: 60ch; margin-bottom: 36px; }#page-insight .section-head h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem,3vw,2rem); margin: 12px 0 8px; }#page-insight .section-head p { color: var(--muted); margin: 0; }#page-insight .waitlist-band { border: 1px solid var(--hairline); border-radius: 16px; padding: 46px; text-align: center; background: var(--surface); }#page-insight .waitlist-band h2 { font-family: var(--font-display); font-size: clamp(1.5rem,3vw,2rem); margin: 0 0 12px; }#page-insight .waitlist-band p { color: var(--muted); margin: 0 0 26px; }
+
+  @media (max-width: 900px) {#page-insight .mapping-row, #page-insight .roadmap-grid { grid-template-columns: 1fr; }#page-insight .steps { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {#page-insight .steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="#" data-page="home" class="brand"><span class="mark"><img src="asset/logo.png" alt="Scimly logo"></span>Scimly</a>
+    <div class="nav-links" id="navLinks">
+      <a href="#" data-page="home" class="nav-link">Home</a>
+      <a href="#" data-page="products" class="nav-link">Products</a>
+      <a href="#" data-page="blog" class="nav-link">Blog</a>
+      <a href="downloads/scimly-guard-demo.zip" class="nav-link" download>Download Demo</a>
+      <a href="#" data-page="guard" class="nav-cta">View Scimly Guard</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  </div>
+</nav>
+
+<div id="main-content">
+<div id="page-home" class="page">
+
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Scimly · Identity &amp; data software</span>
+        <h1>We build software that <em>proves its own trustworthiness</em>.</h1>
+        <p class="lead">Every Scimly product runs entirely on your own device — your directory data, access logs, and spreadsheets never touch a server we operate. You get an executive-grade report back in under a minute.</p>
+        <div class="hero-actions">
+          <a href="#" data-page="products" class="btn btn-primary">See our products</a>
+          <a href="#" data-page="blog" class="btn btn-ghost">Read the blog</a>
+        </div>
+      </div>
+      <div class="seal-wrap">
+        <div class="seal" aria-hidden="true">
+          <svg viewBox="0 0 300 300">
+            <defs>
+              <path id="ringPath" d="M 150,150 m -118,0 a 118,118 0 1,1 236,0 a 118,118 0 1,1 -236,0" />
+            </defs>
+            <circle cx="150" cy="150" r="140" fill="none" stroke="var(--hairline)" stroke-width="1"/>
+            <circle cx="150" cy="150" r="96" fill="none" stroke="var(--hairline)" stroke-width="1"/>
+            <g class="ring-text">
+              <text fill="var(--muted)" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1">
+                <textPath href="#ringPath" startOffset="0%">PRIVACY-FIRST · LOCAL-FIRST · ZERO BACKEND · </textPath>
+                <textPath href="#ringPath" startOffset="50%">PRIVACY-FIRST · LOCAL-FIRST · ZERO BACKEND · </textPath>
+              </text>
+            </g>
+            <path d="M150 95 l45 20 v40 c0 38 -20 62 -45 72 c-25 -10 -45 -34 -45 -72 v-40 z" fill="none" stroke="#D4A94A" stroke-width="2.5"/>
+            <path d="M128 150 l16 16 28 -34" fill="none" stroke="#D4A94A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="pillars">
+        <div class="pillar">
+          <span class="num">01</span>
+          <h3>Runs where your data already is</h3>
+          <p>No file leaves your device. Connectors to Google Workspace and Microsoft Entra ID authenticate directly against your own app registration — we never see a token.</p>
+        </div>
+        <div class="pillar">
+          <span class="num">02</span>
+          <h3>Answers, not dashboards to interpret</h3>
+          <p>Every product ends in a decision-ready output: a readiness score, a phased remediation plan, a chart your team actually asked for.</p>
+        </div>
+        <div class="pillar">
+          <span class="num">03</span>
+          <h3>Built for the people who get paged</h3>
+          <p>IT admins, compliance consultants, and the analyst who owns "why is this dashboard wrong" — Scimly is scoped to their week, not a platform migration.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What we're building</span>
+        <h2>Two products. Two very different jobs.</h2>
+        <p>Each one gets its own home, its own interface, its own pace of release — we don't force unrelated tools into a single look just because they share a logo.</p>
+      </div>
+      <div class="products-grid">
+        <a class="product-card" href="#" data-page="guard">
+          <span class="tag tag-live">Available now</span>
+          <h3>Scimly Guard</h3>
+          <p>Access review &amp; SCIM-readiness audits. Feed it a CSV export, or connect Google Workspace / Microsoft Entra ID live, and get a full risk report before your coffee's cold.</p>
+          <span class="go">Explore Guard</span>
+        </a>
+        <a class="product-card" href="#" data-page="insight">
+          <span class="tag tag-dev">In development</span>
+          <h3>Scimly Insight</h3>
+          <p>Upload a spreadsheet, get a dashboard the same minute — automatic chart recommendations, plain-English findings, and a chat interface for asking your own data questions.</p>
+          <span class="go">Preview Insight</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Why teams pick Scimly</span>
+        <h2>Three things every Scimly product holds itself to</h2>
+      </div>
+      <div class="trust-list">
+        <div class="trust-item"><span class="dot"></span><p><strong>Under 60 seconds</strong>From raw export to a report you could hand an auditor.</p></div>
+        <div class="trust-item"><span class="dot"></span><p><strong>Nothing routed through us</strong>No remote backend sees your client's directory or dataset.</p></div>
+        <div class="trust-item"><span class="dot"></span><p><strong>Exports that hold up</strong>Print-ready PDF, structured Markdown, or clean CSV — every time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="blog">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">From the blog</span>
+        <h2>Notes on access governance &amp; data work</h2>
+      </div>
+      <div class="blog-teaser-grid">
+        <a class="teaser-card" href="#" data-page="blog">
+          <span class="eyebrow">Access governance</span>
+          <h4>The SCIM external ID nobody checks — until an audit</h4>
+          <p>Why a missing external ID is the single strongest signal that an account was never provisioned properly.</p>
+        </a>
+        <a class="teaser-card" href="#" data-page="blog">
+          <span class="eyebrow">Building Scimly</span>
+          <h4>Why we refuse to add a backend</h4>
+          <p>The architectural decision behind every Scimly product, and what it costs us in exchange for what it earns your data.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+</div>
+
+<div id="page-products" class="page">
+
+  <header class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">Scimly · Products</span>
+      <h1>Two products, built for two different Tuesdays.</h1>
+      <p>Each one has its own interface, its own colors, its own release timeline. Open one to see the full picture — we don't cram them onto one page just because they share a name.</p>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+
+      <a class="product-row" href="#" data-page="guard">
+        <div class="visual">
+          <svg class="placeholder-chart" viewBox="0 0 300 180" aria-hidden="true">
+            <path d="M40 14 L74 27 V68 C74 100 58 120 40 132 C22 120 6 100 6 68 V27 Z" fill="none" stroke="#2B3542" stroke-width="2.5"/>
+            <polyline points="24,70 35,83 57,50" fill="none" stroke="#4fd869" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="104" cy="26" r="4" fill="#E5586E"/>
+            <rect x="116" y="22" width="150" height="8" rx="4" fill="#2B3542" opacity="0.85"/>
+            <circle cx="104" cy="54" r="4" fill="#D98F2B"/>
+            <rect x="116" y="50" width="122" height="8" rx="4" fill="#2B3542" opacity="0.6"/>
+            <circle cx="104" cy="82" r="4" fill="#D98F2B"/>
+            <rect x="116" y="78" width="140" height="8" rx="4" fill="#2B3542" opacity="0.6"/>
+            <circle cx="104" cy="110" r="4" fill="#4fd869"/>
+            <rect x="116" y="106" width="98" height="8" rx="4" fill="#2B3542" opacity="0.4"/>
+            <circle cx="104" cy="138" r="4" fill="#E5586E"/>
+            <rect x="116" y="134" width="132" height="8" rx="4" fill="#2B3542" opacity="0.85"/>
+            <line x1="6" y1="158" x2="270" y2="158" stroke="#2B3542" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="tag tag-live">Available now</span>
+          <h2>Scimly Guard</h2>
+          <p class="desc">Access review &amp; SCIM-readiness audit software. Point it at a CSV export, or connect Google Workspace and Microsoft Entra ID live, and get a full risk report — readiness score, phased remediation plan, license waste, all of it — before your coffee's cold.</p>
+          <div class="feature-pills">
+            <span>Stale account detection</span>
+            <span>MFA gap flagging</span>
+            <span>SCIM ID checks</span>
+            <span>License waste $</span>
+            <span>PDF / Markdown / CSV export</span>
+          </div>
+          <span class="go" style="font-weight:600;">Open Scimly Guard →</span>
+        </div>
+      </a>
+
+      <a class="product-row dev" href="#" data-page="insight">
+        <div class="visual">
+          <svg class="placeholder-chart" viewBox="0 0 300 180" aria-hidden="true">
+            <line x1="20" y1="150" x2="280" y2="150" stroke="#2B3542" stroke-width="1"/>
+            <line x1="20" y1="20" x2="20" y2="150" stroke="#2B3542" stroke-width="1"/>
+            <rect x="40" y="90" width="26" height="60" fill="#D4A94A" opacity="0.85"/>
+            <rect x="86" y="60" width="26" height="90" fill="#D4A94A" opacity="0.6"/>
+            <rect x="132" y="105" width="26" height="45" fill="#D4A94A" opacity="0.85"/>
+            <polyline points="180,120 205,80 230,95 255,45" fill="none" stroke="#8FA7C9" stroke-width="2.5"/>
+            <circle cx="255" cy="45" r="4" fill="#8FA7C9"/>
+          </svg>
+        </div>
+        <div>
+          <span class="tag tag-dev">In development</span>
+          <h2>Scimly Insight</h2>
+          <p class="desc">Upload a spreadsheet, get a dashboard the same minute. Insight cleans your data, recommends the right chart for each column, and lets you ask it questions in plain English — no analyst required for the first pass.</p>
+          <div class="feature-pills">
+            <span>Auto chart recommendation</span>
+            <span>Drag-and-resize layout</span>
+            <span>Plain-English insights</span>
+            <span>Ask-your-data chat</span>
+          </div>
+          <span class="go" style="font-weight:600;">Preview Scimly Insight →</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+</div>
+
+<div id="page-blog" class="page">
+
+  <header class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">Scimly · Blog</span>
+      <h1>Notes on access governance &amp; data work</h1>
+      <p>Short, specific write-ups from building Scimly Guard and Scimly Insight — not marketing copy.</p>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="post-list">
+        <article class="post-row" data-post>
+          <div class="date">Dec 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By the Scimly Team</span>
+            <h2>Scimly Guard vs. SailPoint, Okta Identity Governance, and Zluri: what each one actually costs</h2>
+            <p>People ask us how Scimly Guard compares to the bigger names in identity governance often enough that we figured we'd just write it down — including the pricing, which most of these vendors don't publish. Numbers below are the most recent publicly reported figures as of late 2026; identity-platform pricing changes often, so treat this as a starting point and confirm current numbers directly with each vendor before budgeting.</p>
+            <div class="post-more">
+              <p>SailPoint doesn't publish list pricing — every deal is custom-negotiated — but third-party procurement data and customer reports put smaller deployments at roughly $75,000 a year, with mid-market organizations commonly landing between $100,000 and $500,000 annually. That's before professional services, which frequently add another two to three times the software cost on top, and before the dedicated admin headcount most IdentityIQ deployments end up needing to keep the platform tuned. Rollouts are typically measured in months, not days. It's built for large, regulated enterprises running continuous governance across thousands of identities and hundreds of integrated applications, and it's priced and staffed accordingly.</p>
+              <p>Okta bundles access governance into its Essentials Suite, published at $17 per user per month — call it roughly $20,400 a year for a 100-person company — with Professional and Enterprise tiers requiring a custom quote from sales. Zluri's core SaaS management and access-review platform is typically quoted in the $4–8 per user per month range depending on tier, though exact pricing for your org size still runs through a sales conversation. Both are genuinely good products for what they do: continuous, always-on visibility with live directory connectors, ongoing per-seat billing that scales as your headcount does, and dozens to hundreds of pre-built app integrations. That ongoing coverage is exactly what you're paying the subscription for.</p>
+              <p>Scimly Guard is a different shape of product on purpose. It's a one-time purchase — Base Edition at $250, the Google Workspace or Microsoft Entra ID live-connector editions at $450 each, Full Suite at $999 — not a subscription, and there's no per-seat math: whether you're reviewing 40 accounts or 4,000, the price is the same, because you're buying a tool, not renting ongoing access. It runs entirely on your own device, so there's no admin headcount required to operate it and nothing to keep "tuned." The honest trade-off: it's built for point-in-time and periodic reviews, not continuous real-time governance across a large integrated app ecosystem. If you need always-on enforcement across hundreds of connected SaaS tools, an enterprise IGA platform is the right category. If you need a rigorous, repeatable review a few times a year — or you're a consultant running these for multiple clients — Scimly Guard gets you the same rigor without a five- or six-figure annual line item.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Dec 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>Building a quarterly access review habit without dedicated headcount</h2>
+            <p>Most companies that do access reviews well don't have a headcount line item for it. They have one person who owns it as a recurring 90-minute block on their calendar, four times a year, with a process boring enough to survive them being on vacation when the date comes around.</p>
+            <div class="post-more">
+              <p>The reviews that fall apart are almost always the ones designed as a project instead of a habit — someone decides "we should really do an access review," blocks out a week, and treats it as a one-off initiative. It gets done once, thoroughly, and then never again, because nothing about how it happened makes it easy to repeat. The reviews that stick are the opposite: intentionally small in scope per cycle, run on a fixed calendar date regardless of how busy that quarter is, with the same export, the same checks, and the same report format every time so there's no re-deriving the process from scratch.</p>
+              <p>The habit needs three things to survive without dedicated headcount: a calendar reminder that isn't dependent on anyone remembering, a repeatable ten-minute export step from each directory you're checking, and a tool that turns that export into findings and a prioritized action list without requiring a security background to interpret. Take any one of those away and the review quietly stops happening around the third quarter, usually right when a genuinely stale admin account has had the most time to sit unnoticed.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Nov 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>Break-glass accounts: the emergency access nobody wants to review</h2>
+            <p>Every org with any operational maturity has at least one "break-glass" account — a shared, high-privilege login held in reserve for the moment your normal admin access is unavailable, like an SSO outage locking everyone out at once. They're necessary. They're also the account most access reviews quietly skip, because someone decides they're "special" and out of scope.</p>
+            <div class="post-more">
+              <p>That exemption is exactly backwards. A break-glass account combines the two riskiest properties an account can have: standing, unrevocable, top-tier privilege, and — because it's used so rarely by design — almost no one watching whether it's actually still needed, still correctly scoped, or still only known to the people who are supposed to know it. An account that's used constantly gets noticed if something's wrong with it. An account that's used once every two years doesn't, which is precisely the profile that makes it valuable to leave alone if you're an attacker who's found it.</p>
+              <p>Reviewing break-glass access doesn't mean using it, which defeats the point of keeping it in reserve. It means checking three things on a fixed schedule regardless of activity: who currently knows the credentials and whether that list has grown past the people who genuinely need it, whether the account's privilege level still matches what an actual emergency would require rather than what convenience crept it up to, and whether the last credential rotation postdates everyone who's left the company since. None of that requires the account to be logged into — it requires someone to actually look at it instead of waving it through as an exception every cycle.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Nov 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By the Scimly Team</span>
+            <h2>What "we never see your data" actually means, technically</h2>
+            <p>We say Scimly Guard runs entirely on your own device a lot, and we mean it precisely, not as a marketing line. Here's what's actually happening under the hood when you drop a CSV in or connect a live directory, and what "we never see it" cashes out to mechanically.</p>
+            <div class="post-more">
+              <p>When you load a CSV, the app reads it directly into memory on your machine using the same File API a browser would — there's no upload step, because there's no server endpoint the file is being sent to. Parsing, scoring, and report generation all happen in that same app window, using JavaScript running locally, and the resulting PDF, Markdown, and CSV exports are assembled and offered as a local download the same way. At no point does your user data leave the device it's already on, because the application was never built with a destination for it to go to.</p>
+              <p>The live directory editions work differently but land in the same place: Google Workspace and Microsoft Entra ID connections use OAuth with PKCE, a flow specifically designed so the access token lives only in your local app session and is never exposed to, or routed through, a third-party server — including ours. The directory API calls go straight from your device to Google's or Microsoft's own APIs. We simply never sit in that path. This is also exactly why the base editions can't offer things like saved history across devices or multi-user collaboration out of the box — there's no server retaining state between sessions. That's the trade we made deliberately, and it's the same reason there's nothing on our end for a breach to expose.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Oct 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>Mergers and acquisitions: the access governance nobody budgets for</h2>
+            <p>When two companies merge, the M&amp;A checklist covers finance, legal, and org charts in detail. Directory consolidation — the part where two separate identity systems, two separate sets of admin accounts, and two separate offboarding histories become one — usually gets a single line item and nowhere near enough time.</p>
+            <div class="post-more">
+              <p>The acquired company's directory almost always carries baggage the acquiring company doesn't know about yet: former employees who were suspended rather than deprovisioned, contractors from three years ago whose accounts were never fully closed out, and admin-level access handed out generously during a smaller, more informal phase of the company's life. None of that shows up on an org chart. It shows up when someone finally exports both directories and cross-references them, usually months after the deal closed and well past the point where anyone remembers why a given account has the access it does.</p>
+              <p>The practical fix is treating directory consolidation as its own access review, run before the two systems are merged rather than after — audit each directory independently first, resolve duplicate identities and stale accounts on both sides, and only then integrate. Merging first and cleaning up later means you're now running a single review against a directory that's twice the size and has inherited every unresolved issue from both companies at once, which is a much harder problem to untangle than two smaller, separate ones.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Oct 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>Preparing for your first SOC 2 audit: an access-review checklist for teams that have never done one</h2>
+            <p>If your company is heading into its first SOC 2 audit, access review is one of the areas auditors dig into hardest — and one of the areas first-timers are least prepared for, because "we'll just check it when the auditor asks" isn't a control, it's a scramble.</p>
+            <div class="post-more">
+              <p>Start well before the audit window opens, not during it. You want at least one full review cycle completed, documented, and dated before an auditor ever asks for evidence — a single review run the week the audit starts looks exactly like what it is, a rush job assembled for the audit rather than an operating control. Auditors are specifically trained to spot the difference between a policy that exists and a policy that's actually been followed over time.</p>
+              <p>The minimum checklist for a first review: export user lists from every system that touches sensitive data or has admin-level roles, flag every account with no login in the last 90 days, confirm MFA enrollment status on every privileged account specifically, and produce a dated report showing what was checked and what was found — even if the answer to "what was found" is "nothing." That last part matters more than it sounds like it should: a report showing you looked and found no issues is real evidence; no report at all is a gap, regardless of how clean your access actually is.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Sep 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By the Scimly Team</span>
+            <h2>CSV or live connector? Choosing the right way to run an access review</h2>
+            <p>Scimly Guard ships both a CSV-based workflow and live directory connectors for Google Workspace and Microsoft Entra ID, and people sometimes assume "live" is automatically the better option. It isn't always — the two modes are built for genuinely different situations, not a basic-vs-premium split.</p>
+            <div class="post-more">
+              <p>A live connector is the right call when you want the most current possible data with zero manual export steps, when you're running reviews frequently enough that re-exporting a CSV every time becomes real friction, or when you're a consultant who needs read access to a client's directory without them having to hand you a data file at all. The trade-off is that it requires OAuth setup on the client's side and only works for the specific platforms it connects to.</p>
+              <p>CSV is the right call more often than people assume: when you're consolidating data from a system that doesn't have a live connector edition yet, when you specifically want a frozen point-in-time snapshot for audit evidence rather than live data that could change mid-review, or when IT policy restricts granting any new OAuth app access to the directory — which is a completely reasonable policy, and one a CSV export sidesteps entirely since nothing new is being authorized. Most teams end up using both: CSV for the audit-evidence review that needs a fixed snapshot, live connectors for the faster day-to-day spot-checks in between.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Sep 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>Reading a Microsoft Entra ID export like a security engineer</h2>
+            <p>A Microsoft Entra ID (formerly Azure AD) user export is a different shape of wall-of-columns than Google Workspace's, with its own set of fields that actually matter for a security review and its own places stale access likes to hide.</p>
+            <div class="post-more">
+              <p>Start with <code>accountEnabled</code> and <code>signInActivity.lastSignInDateTime</code> together, the same pairing logic as any dormancy check: a disabled account is usually fine, but an enabled account with no recent sign-in — especially one holding a privileged directory role — is exactly the pattern worth flagging first. Cross-reference both against the account's assigned directory roles specifically, since Entra ID often shows role assignments as a separate object from the base user record, easy to miss if you're only scanning the primary export.</p>
+              <p>The field that trips people up most is <code>onPremisesSyncEnabled</code>. An account showing <code>false</code> when your organization is supposed to be running hybrid identity with on-prem AD sync usually means the account was created directly in the cloud, outside your normal provisioning path — the Entra ID equivalent of the missing SCIM external ID we've written about before, and worth treating with the same suspicion. Guest accounts (<code>userType: Guest</code>) deserve their own pass entirely: they're frequently added for a single project and never cleaned up once it ends, sitting with whatever access they were given at the time indefinitely.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Aug 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>Duplicate and near-duplicate identities: the messiest finding in every access review</h2>
+            <p>Exact duplicate accounts are easy to catch — same email, same name, two rows in the export. The ones that actually cause problems are the near-duplicates: <code>jsmith@company.com</code> and <code>j.smith@company.com</code>, or an old personal-email account that was never fully migrated after a company email rollout. Those don't get caught by a simple duplicate check, and they're far more common than people expect.</p>
+            <div class="post-more">
+              <p>Near-duplicates matter because they split one person's access footprint across two records that no automated process treats as the same person. Deprovisioning tooling that correctly disables <code>jsmith@company.com</code> when someone leaves has no idea <code>j.smith@company.com</code> exists, so that second account — often created accidentally during onboarding, or left over from before a naming convention was standardized — just keeps working after the person is gone. It's not malicious, and it's rarely even noticed by the person who has it; it's simply invisible to whatever system is supposed to be tracking "does this employee still work here."</p>
+              <p>Catching these requires fuzzy matching, not exact matching — normalizing for punctuation, common nickname variants, and old domain aliases before comparing records, then flagging near-matches for a human to confirm rather than auto-merging them, since some near-duplicates really are two different people. It's one of the more tedious parts of a thorough review, and one of the easiest to skip under time pressure, which is exactly why it's worth automating rather than eyeballing a spreadsheet for it.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Aug 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>Contractor and vendor access: the offboarding blind spot employee checklists miss</h2>
+            <p>Most offboarding processes exist because HR triggers them — someone's last day gets entered into a system, and a chain of deprovisioning steps follows. Contractors and vendors usually don't pass through HR at all, which means the trigger that's supposed to start offboarding often never fires in the first place.</p>
+            <div class="post-more">
+              <p>A contractor's access is typically granted directly by whoever brought them on — an engineering manager, a marketing lead — outside the standard employee provisioning flow, and it ends the same informal way: the contract quietly finishes, the person stops logging in, and nobody sends the equivalent of a termination notice because there technically wasn't one. The account isn't revoked; it's just abandoned, functional and unwatched, which from a risk standpoint is worse than a normal dormant account because it was often given broader access than a typical employee role to begin with, for the scope of whatever project it was brought on for.</p>
+              <p>The fix isn't extending the HR offboarding trigger to contractors, since most organizations don't track contractor engagements in HR systems at all. It's treating every contractor and vendor account as inherently temporary at the point of creation — assigning it an explicit end date up front, even a rough one, so an access review has something concrete to check it against instead of relying on someone remembering to flag it manually when the engagement quietly ends.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jul 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By the Scimly Team</span>
+            <h2>Inside Scimly Guard: how we score access readiness in under a minute</h2>
+            <p>Every Scimly Guard report leads with a single number — a readiness score out of 100. People ask us constantly how it's calculated, since a single number can hide a lot of judgment calls. Here's exactly what goes into it.</p>
+            <div class="post-more">
+              <p>The score starts from five weighted categories: stale/dormant accounts, MFA coverage on privileged roles, SCIM/provisioning gaps, orphaned or misconfigured records, and license waste. Each category is scored independently against your dataset, then combined using fixed weights we chose deliberately — MFA gaps on admin accounts count for more than a duplicate email, because the blast radius of a compromised, unprotected admin account is categorically different from a data-hygiene issue. None of the weighting is dynamically "tuned" per customer; the same rubric applies to a 50-person startup and a 5,000-person enterprise, because a stale admin account is exactly as risky regardless of company size.</p>
+              <p>A 100 doesn't mean "no findings" — it means no findings serious enough to move the needle at the thresholds you've set (dormancy days, cost-per-seat, and so on). This is why the report leads with a phased action plan — Immediate / This Week / This Month / This Quarter — rather than the score alone: the score tells you where you stand, the plan tells you what to actually do about it. We built it this way after watching people stare at a "68/100" with no idea whether that's actually bad or just normal for their org size. The plan removes that ambiguity.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jul 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>The SCIM external ID nobody checks — until an audit</h2>
+            <p>A missing SCIM external ID is one of the clearest signals that an account was never provisioned through your identity provider (IdP). While it might seem like a minor data gap, it's a red flag for auditors and a real risk to your access governance. Here's why it matters more than it looks like it should.</p>
+            <div class="post-more">
+              <p>The <code>externalId</code> is the unique identifier that links a user's account in a service provider (like your app) back to their identity in an IdP like Okta, Azure AD, or Google Workspace. When an account is created via SCIM, this ID is automatically populated. If it's missing, it almost always means the account was created manually — outside of your standard, automated process.</p>
+              <p>This "shadow IT" account won't be deprovisioned when the user leaves the company, because the IdP doesn't know it exists. It won't be included in automated access reviews. It's a ghost in the machine, and during a SOC 2 or ISO 27001 audit, these are exactly the kinds of discrepancies that lead to findings. Scimly Guard flags these immediately, giving you a chance to remediate them before they become an audit headache.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jul 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By the Scimly Team</span>
+            <h2>Why we refuse to add a backend</h2>
+            <p>Every Scimly product runs entirely on your own device. That's a real architectural cost, but it's a deliberate one. Here's what it buys back for the people trusting us with their directory data.</p>
+            <div class="post-more">
+              <p>When you run an analysis in Scimly Guard, your user data is never uploaded to a server we control. It's processed locally, on your machine. This means there is zero risk of a data breach on our end exposing your sensitive information. For access governance, where you're dealing with employee lists, roles, and permissions, that's not a small thing.</p>
+              <p>This constraint forces us to build simpler, more robust tools. It also means the base editions can't support multi-user collaboration or saved state out of the box. We think that's the right trade-off. For teams that need more, the architecture is designed to be extended with your own backend or database, keeping you in control.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jun 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>The real cost of a dormant paid seat</h2>
+            <p>A single dormant seat — a paid license for a user who hasn't logged in for 90 days — might seem like a rounding error. But it's rarely just one. If a single seat costs $19/month, that's $228 a year. Across a sales team of 50 people, if just 10% of those seats are dormant (a conservative estimate), that's $2,280 a year in pure waste for one department.</p>
+            <div class="post-more">
+              <p>This isn't a budgeting failure; it's a provisioning one. When an employee leaves or changes roles, their access to major platforms is usually revoked automatically via SSO. But smaller, manually-provisioned tools are often forgotten. The license remains active, the credit card keeps getting charged, and nobody notices until the next annual audit.</p>
+              <p>Scimly Guard's license waste analysis flags these accounts by combining last-login dates with per-seat cost data. It gives you an exact dollar amount for monthly and annualized waste, making it easy to justify the cleanup effort and demonstrate immediate ROI to finance.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jun 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>SCIM vs. SSO: the two acronyms everyone confuses</h2>
+            <p>We get this question constantly, from technical and non-technical people alike: "we have SSO, so why does Scimly say we have provisioning gaps?" SSO and SCIM solve two completely different problems, and conflating them is one of the most common — and costly — misunderstandings in access governance.</p>
+            <div class="post-more">
+              <p>SSO (Single Sign-On) answers "who is this person, and can they log in?" It's an authentication protocol — SAML or OIDC — that lets a user log into an app using their identity provider's credentials instead of a separate password. SCIM (System for Cross-domain Identity Management) answers a completely different question: "does this account exist, and is it correctly provisioned and deprovisioned?" It's a protocol for automatically creating, updating, and — critically — removing user accounts in downstream apps when something changes in the IdP.</p>
+              <p>Here's where it breaks in practice: plenty of apps support SSO login without supporting SCIM provisioning. That means someone can be manually added to an app by an admin clicking "invite user," then log into it via SSO perfectly fine — the login flow works — while the account itself was never provisioned through, and will never be deprovisioned by, your IdP. When that employee leaves, IT revokes their IdP account and assumes access is gone everywhere. It isn't. The orphaned account sits there, fully functional, invisible to any process that only checks the IdP's user list. This is exactly the gap Scimly Guard's SCIM external ID check is built to catch.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jun 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>Reading a Google Workspace admin export like a security engineer</h2>
+            <p>A raw Google Workspace user export looks like an intimidating wall of columns — org unit paths, last-login timestamps, 2SV enrollment flags, suspended status. Most of it doesn't matter for a security review. Here's the handful of columns that actually do, and what to look for in each.</p>
+            <div class="post-more">
+              <p>Start with <code>lastLoginTime</code> and the 2-Step Verification enrollment flag together, not separately. A user who logged in recently but isn't enrolled in 2SV is an active, unprotected account — arguably higher priority than a dormant one, since it's actually being used. Cross-reference this against admin and delegated-admin status: any privileged account without 2SV enrollment should be treated as a same-day fix, not a backlog item.</p>
+              <p>The org unit path is where stale provisioning hides. Departed contractors and former employees frequently get "suspended" instead of fully deleted, and suspended accounts often sit in whatever org unit they were last active in rather than a dedicated "offboarded" unit — meaning a quick visual scan of org units won't surface them. What will: cross-referencing suspended status against a last-login date older than your policy threshold, and checking whether those accounts still hold any delegated admin roles or shared drive ownership, since suspension doesn't automatically strip either.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">May 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>The 90-day rule: choosing an inactivity threshold that actually works</h2>
+            <p>90 days shows up so often as the default "dormant account" threshold that people assume it's some kind of compliance requirement. It isn't. It's a starting point, and for a lot of organizations, it's the wrong one.</p>
+            <div class="post-more">
+              <p>The right threshold depends entirely on how the role is supposed to be used. A 90-day window makes sense for a general employee account — nobody should go three months without touching their email or core apps. It makes no sense for a break-glass admin account, a seasonal-contractor role, or an account tied to an annual compliance task; flagging those as "stale" every quarter just trains your team to ignore the alert, which defeats the entire purpose of monitoring.</p>
+              <p>A better approach is tiering thresholds by role rather than applying one number company-wide: 30 days for standard employee accounts, 14 days for privileged and admin accounts, since the cost of a compromised admin credential sitting unnoticed is so much higher, and a manually-tagged "exempt, with review date" category for legitimate low-frequency accounts, so they're still checked periodically without triggering noise every cycle. Scimly Guard's CSV editions let you set this threshold per analysis run specifically so you're not stuck with a single number that's wrong for half your organization.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">May 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>Why SOC 2 auditors always ask for your deprovisioning logs</h2>
+            <p>If you've been through a SOC 2 Type II audit, you already know the drill: the auditor doesn't just want to see your offboarding policy document, they want proof it was actually followed, for every single termination in the audit window.</p>
+            <div class="post-more">
+              <p>This is the difference between a "policy" control and an "operating effectiveness" control. Having a written offboarding checklist proves intent. Producing a timestamped log showing that a departed user's access to thirty different systems was revoked within, say, 24 hours of their termination date — for every termination in the last 12 months, not just the ones that went smoothly — proves the control actually operated as designed. Auditors sample; if even one terminated employee's account is found still active during that sample, it can turn into a documented exception on your report, regardless of how good your policy document reads.</p>
+              <p>This is exactly why manual, spreadsheet-based access reviews struggle here — the "proof" tends to be scattered across ticketing systems, Slack threads, and someone's memory of "yeah, I definitely turned that off." A generated access-review report with a clear timestamp, a list of what was checked, and what was flagged gives you something concrete to hand the auditor for each review cycle, rather than reconstructing the story after the fact when the audit request lands.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Apr 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>Shared logins are your access review's blind spot</h2>
+            <p>Every access review checklist talks about individual accounts — who has access, whether they still need it, whether MFA is on. Almost none of them address the shared "team@" or "social@" login sitting in a password manager that five different people know the credentials to.</p>
+            <div class="post-more">
+              <p>Shared accounts break the entire premise of an access review, because the review assumes a one-to-one mapping between an account and a person. When five people share one login, you can't answer "did this person's access get revoked when they left" — the account persists regardless of who's still on the team, because the login itself was never tied to any individual's employment status in the first place.</p>
+              <p>The fix isn't necessarily eliminating every shared account — some tools genuinely only support one login per organization. It's tracking them as a distinct category in your access inventory, with an explicit owner responsible for rotating the password whenever anyone with knowledge of it leaves, and a hard rule that no shared account should have standing admin or financial permissions. When Scimly Guard flags a duplicate email address across two user records, it's often catching exactly this pattern — one shared inbox provisioned into multiple tools under slightly different account names.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Apr 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>Offboarding checklists don't work. Here's what does.</h2>
+            <p>Almost every company we've talked to has an offboarding checklist. Almost every company we've talked to has also had at least one former employee with lingering access, months after they left. The checklist isn't the problem. Relying on it as your only control is.</p>
+            <div class="post-more">
+              <p>A checklist is a manual process, and manual processes fail exactly when they're under the most pressure to succeed — during a messy termination, a resignation with two weeks' notice that turns into two days, a role that touches forty different tools nobody fully inventoried. The checklist assumes someone remembers every system the departing employee had access to, and has time to methodically go through each one, at the exact moment that's least likely to happen cleanly.</p>
+              <p>What actually closes the gap is verification, not process — a review that runs after offboarding is supposed to be complete and independently confirms it actually was, by checking real account data rather than trusting that the checklist got followed. This is a fundamentally different control: the checklist is what someone is supposed to do; the review is proof of what actually happened. Keep the checklist, since it's still useful as a process. Just stop treating "we have a checklist" as equivalent to "we've verified access is revoked."</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Mar 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>What "least privilege" actually means for a 40-person startup</h2>
+            <p>"Least privilege" gets talked about like an enterprise concept — role-based access matrices, formal approval workflows, quarterly recertification committees. At a 40-person company, most of that infrastructure doesn't exist, and doesn't need to yet. The principle still applies; the implementation looks completely different.</p>
+            <div class="post-more">
+              <p>At small scale, least privilege usually isn't broken by a deliberate decision to over-provision — it's broken by convenience during onboarding. It's genuinely faster to add a new hire as "Admin" in a shared tool than to figure out the minimal role that covers their actual job, especially when nobody currently working there remembers why five people have owner-level access to the analytics dashboard. Privilege accumulates by default, not by malice.</p>
+              <p>The practical version of least privilege at this size is periodic, not continuous: a standing quarterly, or even biannual, pass through your admin and owner-level roles across your core tools, asking one blunt question per account — does this specific person's current job require this specific level of access, today — and downgrading anything that doesn't. You don't need a formal access matrix to do this well; you need the discipline to actually run the pass on a schedule, and a way to see admin-role accounts across your directory in one place rather than tool by tool, which is exactly the gap a directory-wide access review closes.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Feb 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>MFA enforcement: the gap between "enabled" and "enforced"</h2>
+            <p>"We have MFA" is one of the most common — and most misleading — answers we hear when asking about a company's security posture. MFA being available to turn on, and MFA actually being required for every login, are two very different security postures, and the gap between them is where most real-world breaches involving stolen credentials happen.</p>
+            <div class="post-more">
+              <p>Most major platforms ship MFA as opt-in by default, which means "we have MFA" often just means the feature exists in the admin console — not that every user has enabled it, and definitely not that login is blocked without it. Optional MFA gets adopted unevenly: security-conscious individuals turn it on, everyone else doesn't, and attackers don't need to compromise every account, just one without it.</p>
+              <p>True enforcement means the identity provider or app itself refuses to complete a login without a second factor — no exceptions, no "remind me later," no accounts grandfathered in from before the policy existed. Getting there requires actually auditing enrollment rates, not just policy existence: pulling the real per-user MFA enrollment status across your directory, cross-referencing it against admin and privileged roles specifically, and closing the gap for those accounts first, since an unprotected admin account is a categorically worse exposure than an unprotected standard user account.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Feb 2026</div>
+          <div>
+            <span class="tag">Building Scimly</span>
+            <span class="byline">By Priya Nair, Access Governance Lead</span>
+            <h2>How to explain access-review findings to people who aren't security people</h2>
+            <p>A finding like "12 admin accounts lack MFA enrollment" is immediately meaningful to a security engineer. To a founder, a finance lead, or a non-technical exec, it can just sound like jargon on a slide. Getting buy-in for remediation depends entirely on translating the finding into something they already care about.</p>
+            <div class="post-more">
+              <p>The translation that actually works is consequence, not mechanism. Nobody outside security needs to understand what MFA is to understand: if one of these twelve passwords leaks in a breach at another company — which happens constantly, and often has nothing to do with us — someone could log into our systems with full admin rights and we wouldn't get an alert. That's the same finding, reframed around what it actually means if it goes wrong, rather than the technical control that's missing.</p>
+              <p>This is also why leading with cost tends to land better than leading with risk alone, wherever there's a real number attached — "$2,280 a year in unused licenses" is unambiguous to anyone who reads a budget, in a way that "provisioning hygiene" never will be. We built Scimly Guard's reports to lead with exactly this kind of framing on purpose: a readiness score and dollar figures up front, technical detail available if someone wants to go deeper, but never required just to understand why something matters.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+        <article class="post-row" data-post>
+          <div class="date">Jan 2026</div>
+          <div>
+            <span class="tag">Access governance</span>
+            <span class="byline">By Marcus Chen, Security Engineer</span>
+            <h2>The hidden cost of manual access reviews</h2>
+            <p>Ask most IT teams how they handle their last access review, and you'll hear some version of the same story: someone exported a spreadsheet, cross-referenced it against another spreadsheet, and spent the better part of a week going tool by tool. The direct cost is obvious — time. The bigger cost is what that time pressure quietly does to the quality of the review itself.</p>
+            <div class="post-more">
+              <p>A manual review under time pressure optimizes for finishing, not for thoroughness. Edge cases get skipped because chasing them down takes too long relative to the deadline. The reviewer starts pattern-matching instead of actually checking — "this looks like the last export, probably fine" — which is exactly how a genuinely risky account slips through untouched for another quarter.</p>
+              <p>The real cost shows up later, when an incident or an audit finding traces back to something a rushed manual review would have caught, and someone has to explain why it wasn't. Automating the mechanical parts — parsing the export, cross-referencing dormancy, flagging MFA gaps, calculating license waste — doesn't remove judgment from the process, it just moves the reviewer's time away from spreadsheet mechanics and toward actually deciding what to do about each finding, which is the part that was always supposed to be the point.</p>
+            </div>
+            <button type="button" class="post-toggle" aria-expanded="false">Read more <span class="chevron" aria-hidden="true">→</span></button>
+          </div>
+        </article>
+      </div>
+      <p class="note">New posts on access governance and building Scimly, roughly twice a month.</p>
+    </div>
+  </section>
+
+</div>
+
+<div id="page-about" class="page">
+
+  <header class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">Scimly · About</span>
+      <h1>A small team building tools we'd want to trust with our own data</h1>
+      <p>We're a small, focused team building software that just works — no bloated platform, no unnecessary layers, just a tool you install and run yourself.</p>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="prose">
+        <p>Scimly started as a way to solve a real access-review problem without needing a login or a server. We build and support everything here directly, so questions go straight to the people who wrote the code — not a support queue, not a ticketing system, just us.</p>
+      </div>
+      <div class="value-list">
+        <div class="value-item"><span class="dot"></span><p><strong>Small by design</strong>No sales team, no bloated roadmap — just the people building it, talking to the people using it.</p></div>
+        <div class="value-item"><span class="dot"></span><p><strong>Built local-first</strong>Every product runs entirely on your device. That's a constraint we chose on purpose, not a limitation we're working around.</p></div>
+        <div class="value-item"><span class="dot"></span><p><strong>Direct support</strong>Every question, bug report, or feature request reaches the person who actually wrote that part of the code.</p></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="page-privacy" class="page">
+
+  <header class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">Scimly · Privacy Policy</span>
+      <h1>Privacy Policy</h1>
+      <p>How Scimly handles data — on this website, and inside the products themselves.</p>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="prose">
+        <span class="meta">Last updated: July 2026</span>
+
+        <h2>The short version</h2>
+        <p>Scimly Guard and Scimly Insight run entirely on your own device. When you analyze a CSV export or connect a live directory, that data is processed on your own machine — it is never uploaded to, or stored on, any server we operate. We built the products this way on purpose, and this policy reflects that.</p>
+
+        <h2>Data from our software</h2>
+        <p>The CSV-based editions of Scimly Guard read the file you provide locally on your device. Nothing is transmitted anywhere. The live Google Workspace and Microsoft Entra ID connectors authenticate directly between your device and Google/Microsoft using your own app registration or OAuth flow — Scimly never receives your access token, your directory data, or a copy of the results. Reports you generate (PDF, Markdown, or CSV) are created and saved locally on your device.</p>
+
+        <h2>Data from this website</h2>
+        <p>This website may use basic, aggregate analytics (such as page-view counts) to understand traffic and improve the site. We do not sell visitor data, and we do not use it to build advertising profiles.</p>
+
+        <h2>Payments</h2>
+        <p>Purchases are processed by <strong>Payhip</strong>, a third-party payment provider. Payment details (card numbers, billing address, etc.) are collected and processed by Payhip directly — we do not see or store your full payment information. Please refer to Payhip's own privacy policy for details on how they handle that data.</p>
+
+        <h2>Cookies</h2>
+        <p>This site may use a small number of essential cookies for basic site functionality and, if enabled, anonymous analytics cookies. It does not use cookies for third-party advertising.</p>
+
+        <h2>Your choices</h2>
+        <ul>
+          <li>Because the software itself never transmits your data to us, there is nothing for us to delete or export on your behalf — it stays on your device throughout.</li>
+          <li>You can clear any locally stored report files the same way you'd delete any other file from your computer.</li>
+          <li>For questions about data Payhip holds regarding a purchase, contact Payhip support directly.</li>
+        </ul>
+
+        <h2>Changes to this policy</h2>
+        <p>If this policy changes, we'll update the date above. Continued use of the site or software after a change means you accept the updated policy.</p>
+
+        <h2>Contact</h2>
+        <p>Questions about this policy can be sent to <a href="mailto:scimlysupport@gmail.com">scimlysupport@gmail.com</a>.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="page-terms" class="page">
+
+  <header class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">Scimly · Terms of Service</span>
+      <h1>Terms of Service</h1>
+      <p>The terms that apply when you purchase or use Scimly Guard, Scimly Insight, or this website.</p>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="prose">
+        <span class="meta">Last updated: July 2026</span>
+
+        <h2>Acceptance of terms</h2>
+        <p>By purchasing, downloading, or using any Scimly product, or by using this website, you agree to these Terms of Service. If you don't agree with them, please don't use our products or this site.</p>
+
+        <h2>What you're buying</h2>
+        <p>Each Scimly Guard edition is a one-time purchase of a self-contained desktop application (a Windows installer), delivered through Payhip along with a license key. You may install and run it on your own devices for your own business or client work. It is not a subscription, and it does not include ongoing hosting, since the product runs entirely on your own machine rather than on a server we operate.</p>
+
+        <h2>License</h2>
+        <p>Purchasing an edition grants you a non-exclusive, non-transferable license to use that copy of the software, up to the device limit listed for that edition, for your own or your organization's internal purposes. You may not resell, sublicense, reverse-engineer, or redistribute the software itself as your own product.</p>
+
+        <h2>No warranty</h2>
+        <p>Scimly products are provided "as is," without warranty of any kind, express or implied. While we test our tools carefully, we do not guarantee that results (readiness scores, flagged accounts, cost calculations, etc.) are complete, error-free, or suitable for any specific compliance or audit requirement. You remain responsible for verifying findings before acting on them.</p>
+
+        <h2>Limitation of liability</h2>
+        <p>To the fullest extent permitted by law, Scimly is not liable for any indirect, incidental, or consequential damages arising from the use of our products or website, including but not limited to lost profits, data loss, or business interruption.</p>
+
+        <h2>Third-party services</h2>
+        <p>Some editions connect to third-party services (Google Workspace, Microsoft Entra ID/Graph) or use third-party infrastructure (Payhip for payments). Your use of those services is governed by their own respective terms, which we don't control.</p>
+
+        <h2>Changes to these terms</h2>
+        <p>We may update these terms from time to time. Continued use of our products or this site after a change means you accept the updated terms.</p>
+
+        <h2>Contact</h2>
+        <p>Questions about these terms can be sent to <a href="mailto:scimlysupport@gmail.com">scimlysupport@gmail.com</a>.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="page-guard" class="page">
+
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Scimly Guard · Access review &amp; SCIM readiness</span>
+      <h1>Every stale account, MFA gap, and wasted seat — found before your auditor finds it.</h1>
+      <p class="lead">Drop in a raw user-access export, or connect Google Workspace and Microsoft Entra ID live. Guard reads it, cleans it, and hands back a readiness score and remediation plan in under a minute — entirely on your own device.</p>
+      <div class="hero-actions">
+        <a href="downloads/scimly-guard-demo.zip" class="btn btn-primary" download>⬇ Download the demo</a>
+        <a href="#editions" class="btn btn-ghost" data-target-section="editions">See editions &amp; pricing</a>
+        <a href="#report" class="btn btn-ghost" data-target-section="report">What the report looks like</a>
+      </div>
+
+      <div class="ticker-frame">
+        <div class="ticker-head">
+          <span>findings.log</span>
+          <span class="live">● analysis complete — 4.2s</span>
+        </div>
+        <div class="ticker-body">
+          <div class="ticker-row"><span class="sev-dot sev-high"></span><span class="msg">Admin account "j.romero" active with no MFA enrolled</span><span class="path">Engineering</span></div>
+          <div class="ticker-row"><span class="sev-dot sev-high"></span><span class="msg">Missing SCIM external ID — account not provisioned via SSO</span><span class="path">Finance</span></div>
+          <div class="ticker-row"><span class="sev-dot sev-med"></span><span class="msg">Paid seat inactive 96 days — $228/mo waste</span><span class="path">Sales</span></div>
+          <div class="ticker-row"><span class="sev-dot sev-med"></span><span class="msg">Duplicate email address across two user records</span><span class="path">Marketing</span></div>
+          <div class="ticker-row"><span class="sev-dot sev-low"></span><span class="msg">Manager field unset for 3 users</span><span class="path">Operations</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Ingestion</span>
+        <h2>Bring a CSV, or connect the real thing</h2>
+        <p>Every edition reads your data the way you already have it — messy export or live directory.</p>
+      </div>
+      <div class="cap-grid">
+        <div class="cap">
+          <span class="eyebrow">CSV engine</span>
+          <h3>Base Edition</h3>
+          <p>Parses any raw user-access export — handles messy formatting, inconsistent dates, and alternate cost structures without a template.</p>
+        </div>
+        <div class="cap">
+          <span class="eyebrow">Live sync</span>
+          <h3>Google Workspace</h3>
+          <p>Pulls your real-time user and admin structure via secure local OAuth — no client secret required, no data leaves your device.</p>
+        </div>
+        <div class="cap">
+          <span class="eyebrow">Live sync</span>
+          <h3>Microsoft Entra ID</h3>
+          <p>Connects via MSAL.js + PKCE to query Microsoft Graph directly, with no backend infrastructure in between.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What it flags</span>
+        <h2>Security risk analytics, run automatically</h2>
+        <p>Guard runs the same checks a senior consultant would — just faster, and every time.</p>
+      </div>
+      <div class="flags-list">
+        <div class="flag-item"><span class="sev-dot sev-high"></span><div><strong>Stale &amp; dormant accounts</strong><p>Users and admins past a configurable inactivity threshold.</p></div></div>
+        <div class="flag-item"><span class="sev-dot sev-high"></span><div><strong>Privileged access gaps</strong><p>Admin accounts operating without multi-factor authentication.</p></div></div>
+        <div class="flag-item"><span class="sev-dot sev-high"></span><div><strong>Provisioning vulnerabilities</strong><p>Missing SCIM external IDs — accounts never provisioned through SSO/SCIM.</p></div></div>
+        <div class="flag-item"><span class="sev-dot sev-med"></span><div><strong>Orphaned &amp; misconfigured records</strong><p>Missing department metadata, unassigned managers, duplicate emails.</p></div></div>
+        <div class="flag-item"><span class="sev-dot sev-med"></span><div><strong>Financial license waste</strong><p>Exact monthly and annualized cost of active-but-inactive paid seats.</p></div></div>
+        <div class="flag-item"><span class="sev-dot sev-low"></span><div><strong>Department breakdown</strong><p>User counts, high-risk flags, and wasted dollars by team.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight section-anchor" id="report">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">The report</span>
+        <h2>An executive-style output, not a raw data dump</h2>
+        <p>Everything below is generated automatically once analysis finishes — no manual chart-building.</p>
+      </div>
+      <div class="cap-grid">
+        <div class="cap">
+          <h3>Readiness at a glance</h3>
+          <ul>
+            <li>Overall readiness score (e.g. 51/100)</li>
+            <li>Risk distribution donut &amp; bar charts</li>
+            <li>MFA coverage gauge</li>
+          </ul>
+        </div>
+        <div class="cap">
+          <h3>Action, not just findings</h3>
+          <ul>
+            <li>Severity-ranked findings with business impact</li>
+            <li>Phased plan: Immediate / This Week / This Month / This Quarter</li>
+            <li>High-risk table: Top 20, Top 50, or full dataset — in sync with export</li>
+          </ul>
+        </div>
+        <div class="cap">
+          <h3>Take it with you</h3>
+          <ul>
+            <li>Print-ready PDF with its own cover page</li>
+            <li>Structured Markdown report</li>
+            <li>Full analyzed dataset as CSV</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sample-panel">
+        <div class="sample-panel-copy">
+          <h3>Not a mockup — an actual run</h3>
+          <p>These are the real files Scimly Guard produced from a 125,000-row directory export: the raw input, the full per-user results, the Markdown report, and the polished executive PDF. Tap any file to download it straight to your device.</p>
+        </div>
+        <div class="sample-files">
+          <a class="sample-file" href="samples/sample-input-data.csv" download>
+            <span class="sample-file-info"><strong>Input data</strong><small>125,000-row raw export as fed into Guard</small></span>
+            <span class="sample-file-dl" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>Download</span>
+          </a>
+          <a class="sample-file" href="samples/sample-access-review-full-results.csv" download>
+            <span class="sample-file-info"><strong>Full results</strong><small>Every row, scored — risk, flags &amp; waste</small></span>
+            <span class="sample-file-dl" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>Download</span>
+          </a>
+          <a class="sample-file" href="samples/sample-access-review-report.md" download>
+            <span class="sample-file-info"><strong>Markdown report</strong><small>Structured summary, ready to paste anywhere</small></span>
+            <span class="sample-file-dl" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>Download</span>
+          </a>
+          <a class="sample-file" href="samples/Scimly-Executive-Report-Sample.pdf" download>
+            <span class="sample-file-info"><strong>Executive PDF</strong><small>Print-ready report with cover page</small></span>
+            <span class="sample-file-dl" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>Download</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-anchor" id="editions">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Editions &amp; pricing</span>
+        <h2>Start free, connect what you need</h2>
+        <p>Each option below is presented with a short detail view so you can see what changes before you click through. Every paid edition comes with a license key, generated instantly at checkout and also emailed to the address you enter before purchase — no waiting, no separate account.</p>
+      </div>
+
+      <div class="product-selector">
+        <div class="product-list">
+          <button class="product-option active" type="button" data-product="base">
+            <img src="asset/base.jpg" alt="Scimly Base Edition preview">
+            <span><strong>Base Edition</strong><small>CSV analysis and reporting</small></span>
+          </button>
+          <button class="product-option" type="button" data-product="google">
+            <img src="asset/google.jpg" alt="Scimly Google Workspace Edition preview">
+            <span><strong>Google Workspace</strong><small>Live Google Workspace connector</small></span>
+          </button>
+          <button class="product-option" type="button" data-product="microsoft">
+            <img src="asset/microsoft.jpg" alt="Scimly Microsoft Entra ID Edition preview">
+            <span><strong>Microsoft Entra ID</strong><small>Live Microsoft Graph connector</small></span>
+          </button>
+          <button class="product-option" type="button" data-product="fullsuite">
+            <img src="asset/fullsuite.jpg" alt="Scimly Full Suite preview">
+            <span><strong>Full Suite</strong><small>Google + Microsoft in one bundle</small></span>
+          </button>
+        </div>
+        <div class="product-detail">
+          <div class="product-detail-visual">
+            <img id="productDetailImage" src="asset/base.jpg" alt="Scimly product preview">
+          </div>
+          <div class="product-detail-copy">
+            <span class="eyebrow" id="productDetailEyebrow">Base edition</span>
+            <h3 id="productDetailTitle">Scimly — Access Review &amp; SCIM Readiness Dashboard (CSV Edition)</h3>
+            <p id="productDetailDesc"></p>
+            <div class="product-features" id="productDetailFeatures"></div>
+            <p id="productDetailLicense" style="font-size:0.85rem; color:var(--muted); margin:0 0 14px;"></p>
+            <div class="product-actions">
+              <a id="productDetailLink" class="btn btn-primary" href="https://payhip.com/b/EMVCA" target="_blank" rel="noopener noreferrer">Get it</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What you get</span>
+        <h2>An app, not a platform</h2>
+      </div>
+      <div class="included-list">
+        <div class="included-item"><strong>Scimly Guard Setup.exe</strong>Windows installer, ready to run</div>
+        <div class="included-item"><strong>sample-data.csv</strong>Sample input data to test it with</div>
+        <div class="included-item"><strong>Quick Start Guide</strong>Install &amp; usage walkthrough</div>
+        <div class="included-item"><strong>License key</strong>Delivered instantly &amp; by email</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="cta-band">
+        <h2>See your own directory scored in under a minute</h2>
+        <p>Download the free demo first — no account, nothing leaves your machine.</p>
+        <a href="downloads/scimly-guard-demo.zip" class="btn btn-primary" download>Download Demo</a>
+      </div>
+    </div>
+  </section>
+
+
+</div>
+
+<div id="page-insight" class="page">
+<div class="status-banner">Scimly Insight is <strong>in active development</strong> — this page previews what's coming.</div>
+
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Scimly Insight · In development</span>
+      <h1>Upload a spreadsheet. Get a dashboard. No analyst required for the first pass.</h1>
+      <p class="lead">Insight cleans your data, works out what each column actually is, and recommends the chart that fits — a KPI card, a pie, a line — then lets you rearrange, filter, and ask it questions from there.</p>
+      <div class="hero-actions">
+        <a href="#waitlist" class="btn btn-primary">Get notified at launch</a>
+        <a href="#how" class="btn btn-ghost">How it will work</a>
+      </div>
+
+      <div class="mapping-frame">
+        <div class="cap">Auto-recommended · Insight looks at each column and picks a chart</div>
+        <div class="mapping-row">
+          <div class="map-card">
+            <div class="col-name">column: revenue</div>
+            <div class="arrow">↓ recommended</div>
+            <div class="chart-name">KPI Card</div>
+            <div class="mini-kpi">$482K</div>
+          </div>
+          <div class="map-card">
+            <div class="col-name">column: country</div>
+            <div class="arrow">↓ recommended</div>
+            <div class="chart-name">Pie Chart</div>
+            <div class="mini-pie" aria-hidden="true"></div>
+          </div>
+          <div class="map-card">
+            <div class="col-name">column: order date</div>
+            <div class="arrow">↓ recommended</div>
+            <div class="chart-name">Line Chart</div>
+            <div class="mini-line">
+              <svg viewBox="0 0 200 46" aria-hidden="true">
+                <polyline points="0,36 30,28 60,32 90,14 120,20 150,8 180,16 200,4" fill="none" stroke="#1E9E90" stroke-width="2.5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Four steps, one upload</h2>
+        <p>This is a real pipeline — each step depends on the one before it, so we're building and shipping it in this order.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><span class="n">01</span><h3>Upload</h3><p>Drag in a CSV or Excel file. Insight validates it and confirms it's readable before anything else happens.</p></div>
+        <div class="step"><span class="n">02</span><h3>Clean &amp; understand</h3><p>Duplicates removed, gaps filled, and every column's real type worked out automatically.</p></div>
+        <div class="step"><span class="n">03</span><h3>Recommend</h3><p>Each column gets matched to the chart that actually fits it — not a generic template.</p></div>
+        <div class="step"><span class="n">04</span><h3>Dashboard</h3><p>Everything renders automatically. From there you can rename, resize, recolor, and rearrange.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Coming after launch</span>
+        <h2>What we're building next</h2>
+        <p>In the order we're building it — each one only starts once the step before it is solid.</p>
+      </div>
+      <div class="roadmap-grid">
+        <div class="roadmap-item"><span class="eyebrow">Editing</span><h4>Make the dashboard yours</h4><p>Rename, delete, resize, or swap the chart type on any widget — right on the canvas.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Layout</span><h4>Drag, resize, save</h4><p>Arrange widgets exactly how your team reads them, and it stays that way next time.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Filters</span><h4>One filter, every chart</h4><p>Change the date range or the country once — every widget on the dashboard updates together.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Saving</span><h4>Save, duplicate, share</h4><p>Keep dashboards for each dataset, duplicate one as a starting point, or hand it to a teammate.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Exporting</span><h4>Take it with you</h4><p>Export as PDF, PNG, CSV, Excel, or JSON — whatever the next meeting needs.</p></div>
+        <div class="roadmap-item"><span class="eyebrow">Ask Insight</span><h4>Ask your data a question</h4><p>Type "show monthly revenue" and get the chart back, no formula required.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="waitlist">
+    <div class="wrap">
+      <div class="waitlist-band">
+        <h2>Be the first to try Scimly Insight</h2>
+        <p>We'll email you the day the first version is ready to run.</p>
+        <a href="mailto:scimlysupport@gmail.com?subject=Notify%20me%20about%20Scimly%20Insight" class="btn btn-primary">Get notified</a>
+      </div>
+    </div>
+  </section>
+
+
+</div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#" data-page="guard">Scimly Guard</a>
+        <a href="#" data-page="insight">Scimly Insight</a>
+        <a href="#" data-page="products">All products</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#" data-page="home">Home</a>
+        <a href="#" data-page="about">About</a>
+        <a href="#" data-page="blog">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#" data-page="privacy">Privacy Policy</a>
+        <a href="#" data-page="terms">Terms of Service</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <p>scimlysupport@gmail.com</p>
+      </div>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>© 2026 Scimly. All rights reserved.</span>
+    <span>Built local-first, on principle.</span>
+  </div>
+</footer>
+
+<script>
+  const THEMES = {"home": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "font-display": "'Fraunces', Georgia, serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "products": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "font-display": "'Fraunces', Georgia, serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "blog": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "font-display": "'Fraunces', Georgia, serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "about": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "font-display": "'Fraunces', Georgia, serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "privacy": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "font-display": "'Fraunces', Georgia, serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "terms": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "font-display": "'Fraunces', Georgia, serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "guard": {"bg": "#F7F8F3", "surface": "#FFFFFF", "surface-2": "#F3F4EC", "hairline": "#E5E8DE", "text": "#18211D", "muted": "#5D685F", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "safe": "#5B5BD6", "warn": "#F0A93A", "font-display": "'Space Grotesk', system-ui, sans-serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}, "insight": {"bg": "#F5F7F2", "surface": "#FFFFFF", "surface-2": "#EEF1E9", "hairline": "#DCE3D8", "text": "#1C231F", "muted": "#5B6660", "accent": "#5B5BD6", "on-accent": "#FFFFFF", "teal": "#5B5BD6", "coral": "#E5586E", "amber": "#D98F2B", "font-display": "'Manrope', system-ui, sans-serif", "font-body": "'Inter', system-ui, sans-serif", "font-mono": "'JetBrains Mono', monospace"}};
+
+  const PRODUCT_DATA = {
+    base: {
+      eyebrow: 'Base edition',
+      title: 'Scimly — Access Review & SCIM Readiness Dashboard (CSV Edition)',
+      description: 'The base edition gives teams a full access review workflow on the desktop with CSV imports, scoring, action planning, and export-ready reports.',
+      features: ['Full CSV engine', 'Readiness and risk scoring', 'PDF / Markdown / CSV export', 'No backend required'],
+      image: 'asset/base.jpg',
+      link: 'https://payhip.com/b/EMVCA',
+      licenseNote: '1 license key per purchase, valid on up to 2 devices.'
+    },
+    google: {
+      eyebrow: 'Google Workspace',
+      title: 'Scimly — Access Review & SCIM Readiness Dashboard (Google Workspace Edition)',
+      description: 'Connect Google Workspace directly from the desktop app and review live directory data without sending data to a backend or requiring a client secret.',
+      features: ['Live Admin SDK connector', 'Local, on-device OAuth', 'Google Workspace data review', 'Same scoring logic'],
+      image: 'asset/google.jpg',
+      link: 'https://payhip.com/b/vuXph',
+      licenseNote: '1 license key per purchase, valid on up to 4 devices.'
+    },
+    microsoft: {
+      eyebrow: 'Microsoft Entra ID',
+      title: 'Scimly — Access Review & SCIM Readiness Dashboard (Microsoft Entra ID Edition)',
+      description: 'Use the Microsoft Entra ID edition to connect to live Microsoft Graph data from the desktop app with PKCE-based authentication and no backend.',
+      features: ['Live Microsoft Graph connector', 'MSAL.js + PKCE flow', 'Entra ID review workflow', 'Full reporting suite'],
+      image: 'asset/microsoft.jpg',
+      link: 'https://payhip.com/b/l6rfb',
+      licenseNote: '1 license key per purchase, valid on up to 4 devices.'
+    },
+    fullsuite: {
+      eyebrow: 'Full suite',
+      title: 'Scimly Full Suite — Access Review & SCIM Readiness Dashboard (Google Workspace + Microsoft Entra ID)',
+      description: 'The full suite includes both live directory connectors plus the CSV workflow, giving consultants and teams one unified desktop dashboard for both ecosystems.',
+      features: ['Google + Microsoft connectors', 'CSV workflow included', 'One unified dashboard', 'Consultant-ready reporting'],
+      image: 'asset/fullsuite.jpg',
+      link: 'https://payhip.com/b/xLCWj',
+      licenseNote: '1 license key per purchase, valid on up to 10 devices.'
+    }
+  };
+
+  function applyTheme(name) {
+    const t = THEMES[name] || THEMES.home;
+    const root = document.documentElement.style;
+    for (const [k, v] of Object.entries(t)) root.setProperty('--' + k, v);
+  }
+
+  function renderProduct(key) {
+    const product = PRODUCT_DATA[key] || PRODUCT_DATA.base;
+    const image = document.getElementById('productDetailImage');
+    const eyebrow = document.getElementById('productDetailEyebrow');
+    const title = document.getElementById('productDetailTitle');
+    const description = document.getElementById('productDetailDesc');
+    const features = document.getElementById('productDetailFeatures');
+    const link = document.getElementById('productDetailLink');
+
+    if (image) image.src = product.image;
+    if (image) image.alt = product.title;
+    if (eyebrow) eyebrow.textContent = product.eyebrow;
+    if (title) title.textContent = product.title;
+    if (description) description.textContent = product.description;
+    if (features) {
+      features.innerHTML = '';
+      product.features.forEach(item => {
+        const chip = document.createElement('span');
+        chip.textContent = item;
+        features.appendChild(chip);
+      });
+    }
+    if (link) {
+      link.href = product.link;
+      link.textContent = 'Get it';
+    }
+
+    const license = document.getElementById('productDetailLicense');
+    if (license) {
+      license.textContent = product.licenseNote || '';
+    }
+
+    document.querySelectorAll('.product-option').forEach(button => {
+      button.classList.toggle('active', button.dataset.product === key);
+    });
+  }
+
+  function showPage(name) {
+    if (!THEMES[name]) name = 'home';
+    document.querySelectorAll('.page').forEach(p => {
+      p.classList.toggle('active', p.id === 'page-' + name);
+    });
+    applyTheme(name);
+    document.querySelectorAll('.nav-link, .nav-cta').forEach(el => {
+      if (el.dataset.page === name) el.setAttribute('aria-current', 'page');
+      else el.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+  }
+
+  const navToggle = document.getElementById('navToggle'), navLinks = document.getElementById('navLinks');
+  function setMenu(open) {
+    navLinks.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', open);
+    navToggle.textContent = open ? '\u2715' : '\u2630';
+  }
+  if (navToggle) navToggle.addEventListener('click', () => setMenu(!navLinks.classList.contains('open')));
+
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-page]');
+    if (el) {
+      e.preventDefault();
+      const name = el.dataset.page;
+      history.pushState(null, '', '#' + name);
+      showPage(name);
+      setMenu(false);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const option = e.target.closest('.product-option');
+    if (option) {
+      e.preventDefault();
+      renderProduct(option.dataset.product);
+      placeProductDetail(option);
+    }
+  });
+
+  // On narrow screens the product list is a single stacked column, and the
+  // shared detail panel used to always sit *below every option*. So picking
+  // an early item (like "Demo") meant scrolling past the rest of the list to
+  // see its details. This moves the detail panel to sit right after whichever
+  // option was just tapped, so it opens inline like an accordion.
+  const mobileProductQuery = window.matchMedia('(max-width: 640px)');
+  function placeProductDetail(activeButton) {
+    const detail = document.querySelector('.product-detail');
+    const selector = document.querySelector('.product-selector');
+    if (!detail || !selector) return;
+    if (mobileProductQuery.matches && activeButton) {
+      activeButton.insertAdjacentElement('afterend', detail);
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      selector.appendChild(detail);
+    }
+  }
+  mobileProductQuery.addEventListener('change', () => {
+    placeProductDetail(document.querySelector('.product-option.active'));
+  });
+
+  // "See editions & pricing" / "What the report looks like" etc — scroll to the
+  // named section on the *current* page instead of letting the browser treat the
+  // hash change as page navigation (which was resetting the view to Home).
+  document.addEventListener('click', (e) => {
+    const jump = e.target.closest('[data-target-section]');
+    if (jump) {
+      e.preventDefault();
+      const targetId = jump.dataset.targetSection;
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        history.replaceState(null, '', '#' + targetId);
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+
+  // Blog posts: click the title or "Read more" to expand full content.
+  document.addEventListener('click', (e) => {
+    const toggle = e.target.closest('.post-toggle');
+    const heading = e.target.closest('#page-blog .post-row h2');
+    const trigger = toggle || heading;
+    if (trigger) {
+      e.preventDefault();
+      const row = trigger.closest('.post-row');
+      const open = row.classList.toggle('open');
+      const btn = row.querySelector('.post-toggle');
+      btn.setAttribute('aria-expanded', String(open));
+      btn.innerHTML = open
+        ? 'Show less <span class="chevron" aria-hidden="true">→</span>'
+        : 'Read more <span class="chevron" aria-hidden="true">→</span>';
+    }
+  });
+
+  window.addEventListener('popstate', () => {
+    const hash = location.hash.replace('#', '');
+    // Only treat the hash as a page switch if it names a real page.
+    // Otherwise it's a same-page section anchor (e.g. #editions) — leave the
+    // current page as-is rather than snapping back to Home.
+    if (!hash || THEMES[hash]) {
+      showPage(hash || 'home');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDemoModal();
+  });
+
+  renderProduct('base');
+  placeProductDetail(document.querySelector('.product-option[data-product="base"]'));
+  showPage(location.hash.replace('#', '') || 'home');
+</script>
+</body>
+</html>
